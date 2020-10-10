@@ -1,0 +1,23 @@
+prefix2020/10/10 08:34:18 text to append
+prefix2020/10/10 08:34:18 more text to append
+prefix2020/10/10 08:35:03 text to append
+prefix2020/10/10 08:35:03 more text to append
+prefix2020/10/10 08:48:04 text to append
+prefix2020/10/10 08:48:04 more text to append
+prefix2020/10/10 08:49:53 text to append
+prefix2020/10/10 08:49:53 more text to append
+prefix2020/10/10 08:50:34 text to append
+prefix2020/10/10 08:50:34 more text to append
+prefix2020/10/10 08:50:34 listen tcp :9000: bind: address already in use
+INFO	2020/10/10 09:13:47 text to append
+INFO	2020/10/10 09:13:47 more text to append
+INFO	2020/10/10 09:13:47 Starting server on :9000
+INFO	2020/10/10 10:09:14 text to append
+INFO	2020/10/10 10:09:14 more text to append
+INFO	2020/10/10 10:09:14 Starting server on :9000
+INFO	2020/10/10 10:39:34 text to append
+INFO	2020/10/10 10:39:34 more text to append
+INFO	2020/10/10 10:39:34 Starting server on :9000
+INFO	2020/10/10 10:43:15 text to append
+INFO	2020/10/10 10:43:15 more text to append
+INFO	2020/10/10 10:43:15 Starting server on :9000
