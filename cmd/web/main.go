@@ -1,11 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
+
+	_ "github.com/go-sql-driver/mysql"
+	"letsgo.net/snippetbox/pkg/models/mysql"
 )
 
 // Config ...
@@ -17,77 +20,47 @@ type Config struct {
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	snippets *mysql.SnippetModel
 }
 
 func main() {
-	cfg := new(Config)
-	flag.StringVar(&cfg.Addr, "addr", ":4000", "HTTP network address")
-	flag.StringVar(&cfg.StaticDir, "static-dir", "./ui/static", "Path to static assets")
-	// addr := flag.String("addr", ":4000", "HTTP network address")
+	addr := flag.String("addr", ":4000", "HTTP network address")
+	dsn := flag.String("dsn", "admin:2020##@/snippetbox?parseTime=true", "MySQL data source name")
 	flag.Parse()
-	f, err := os.OpenFile("text.log",
-		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Println(err)
-	}
-	defer f.Close()
-	infoWriteLog := log.New(f, "INFO\t", log.LstdFlags)
-	errorWriteLog := log.New(f, "ERROR\t", log.LstdFlags)
-	infoWriteLog.Println("text to append")
-	infoWriteLog.Println("more text to append")
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	db, err := openDB(*dsn)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer db.Close()
+
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
+		snippets: &mysql.SnippetModel{DB: db},
 	}
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/snippet", app.showSnippet)
-	mux.HandleFunc("/snippet/create", app.createSnippet)
-	fileServer := http.FileServer(http.Dir(cfg.StaticDir))
-	mux.Handle("/static", http.NotFoundHandler())
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
 	srv := &http.Server{
-		Addr:     cfg.Addr,
+		Addr:     *addr,
 		ErrorLog: errorLog,
-		Handler:  mux,
+		Handler:  app.routes(),
 	}
 
-	infoLog.Printf("Starting server on %s", cfg.Addr)
-	infoWriteLog.Printf("Starting server on %s", cfg.Addr)
+	infoLog.Printf("Starting server on %s", *addr)
 	err = srv.ListenAndServe()
-	errorWriteLog.Println(err)
 	errorLog.Fatal(err)
-
 }
 
-type neuteredFileSystem struct {
-	fs http.FileSystem
-}
-
-func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
-	f, err := nfs.fs.Open(path)
+func openDB(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err
 	}
-
-	s, err := f.Stat()
-	if s.IsDir() {
-		index := filepath.Join(path, "index.html")
-		if _, err := nfs.fs.Open(index); err != nil {
-			closeErr := f.Close()
-			if closeErr != nil {
-				return nil, closeErr
-			}
-
-			return nil, err
-		}
+	if err = db.Ping(); err != nil {
+		return nil, err
 	}
-
-	return f, nil
+	return db, nil
 }
