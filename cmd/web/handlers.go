@@ -20,31 +20,33 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.serverError(w, err)
 		return
+
 	}
-	data := &templateData{Snippets: s}
-	// for _, snippet := range s {
-	// 	fmt.Fprintf(w, "%v\n", snippet)
+	app.render(w, r, "home.page.tmpl", &templateData{Snippets: s})
+	// data := &templateData{Snippets: s}
+	// // for _, snippet := range s {
+	// // 	fmt.Fprintf(w, "%v\n", snippet)
+	// // }
+
+	// files := []string{
+	// 	"./ui/html/home.page.tmpl",
+	// 	"./ui/html/base.layout.tmpl",
+	// 	"ui/html/footer.partial.tmpl",
 	// }
 
-	files := []string{
-		"./ui/html/home.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"ui/html/footer.partial.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		// app.errorLog.Println(err.Error())
-		// http.Error(w, "Internal Server Error", 500)
-		app.serverError(w, err)
-		return
-	}
-	err = ts.Execute(w, data)
-	if err != nil {
-		// app.errorLog.Println(err.Error())
-		// http.Error(w, "Internal Server Error", 500)
-		app.serverError(w, err)
-	}
+	// ts, err := template.ParseFiles(files...)
+	// if err != nil {
+	// 	// app.errorLog.Println(err.Error())
+	// 	// http.Error(w, "Internal Server Error", 500)
+	// 	app.serverError(w, err)
+	// 	return
+	// }
+	// err = ts.Execute(w, data)
+	// if err != nil {
+	// 	// app.errorLog.Println(err.Error())
+	// 	// http.Error(w, "Internal Server Error", 500)
+	// 	app.serverError(w, err)
+	// }
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
