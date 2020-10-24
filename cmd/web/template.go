@@ -9,6 +9,7 @@ import (
 	"html/template" // New import
 	"path/filepath" // New import
 
+	"letsgo.net/snippetbox/pkg/forms"
 	"letsgo.net/snippetbox/pkg/models"
 )
 
@@ -18,6 +19,7 @@ type templateData struct {
 	Snippets    []*models.Snippet
 	FormData    url.Values
 	FormErrors  map[string]string
+	Form        *forms.Form
 }
 
 func humanDate(t time.Time) string {
