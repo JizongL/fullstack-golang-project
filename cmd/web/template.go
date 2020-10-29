@@ -20,6 +20,7 @@ type templateData struct {
 	FormData    url.Values
 	FormErrors  map[string]string
 	Form        *forms.Form
+	Flash       string
 }
 
 func humanDate(t time.Time) string {
