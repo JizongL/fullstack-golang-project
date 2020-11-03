@@ -19,6 +19,7 @@ type templateData struct {
 	Snippets    []*models.Snippet
 	FormData    url.Values
 	FormErrors  map[string]string
+	IsAuthenticated bool
 	Form        *forms.Form
 	Flash       string
 }
