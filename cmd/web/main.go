@@ -16,6 +16,10 @@ import (
 	"letsgo.net/snippetbox/pkg/models/mysql"
 )
 
+type contextKey string
+
+const contextKeyIsAuthenticated = contextKey("isAuthenticated")
+
 // Config ...
 type Config struct {
 	Addr      string
@@ -55,6 +59,8 @@ func main() {
 
 	session := sessions.New([]byte(*secret))
 	session.Lifetime = 12 * time.Hour
+	session.Secure = true
+	
 
 	app := &application{
 		errorLog:      errorLog,

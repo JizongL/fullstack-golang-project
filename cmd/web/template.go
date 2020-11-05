@@ -22,6 +22,7 @@ type templateData struct {
 	IsAuthenticated bool
 	Form        *forms.Form
 	Flash       string
+	CSRFToken 	string
 }
 
 func humanDate(t time.Time) string {
