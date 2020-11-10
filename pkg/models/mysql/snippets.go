@@ -26,7 +26,6 @@ func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
 		return 0, err
 	}
 	return int(id), nil
-
 }
 
 //Get ... This will return a specific snippet based on its id.

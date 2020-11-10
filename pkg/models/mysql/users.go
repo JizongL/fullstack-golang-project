@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/go-sql-driver/mysql" // New import
@@ -21,8 +22,10 @@ func (m *UserModel) Insert(name, email, password string) error { // Create a bcr
 	if err != nil {
 		return err
 	}
+	fmt.Println(name,email,password,"test input 24")
 	stmt := `INSERT INTO users (name, email, hashed_password, created) VALUES(?, ?, ?, UTC_TIMESTAMP())`
 	// Use the Exec() method to insert the user details and hashed password // into the users table.
+	fmt.Println(stmt,"test statement")
 	_, err = m.DB.Exec(stmt, name, email, string(hashedPassword))
 	if err != nil {
 		// If this returns an error, we use the errors.As() function to check // whether the error has the type *mysql.MySQLError. If it does, the

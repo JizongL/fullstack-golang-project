@@ -13,6 +13,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golangcollege/sessions"
+	"letsgo.net/snippetbox/pkg/models"
 	"letsgo.net/snippetbox/pkg/models/mysql"
 )
 
@@ -26,14 +27,21 @@ type Config struct {
 	StaticDir string
 }
 
-type application struct {
-	errorLog      *log.Logger
-	infoLog       *log.Logger
-	snippets      *mysql.SnippetModel
-	session       *sessions.Session
-	templateCache map[string]*template.Template
-	users         *mysql.UserModel
-}
+type application struct { 
+	errorLog *log.Logger 
+	infoLog *log.Logger 
+	session *sessions.Session 
+	snippets interface {
+	Insert(string, string, string) (int, error) 
+	Get(int) (*models.Snippet, error)
+	Latest() ([]*models.Snippet, error)
+	}
+	templateCache map[string]*template.Template 
+	users interface {
+	Insert(string, string, string) error 
+	Authenticate(string, string) (int, error) 
+	Get(int) (*models.User, error)
+	} }
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
@@ -41,7 +49,7 @@ func main() {
 	flag.Parse()
 	secret := flag.String("secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret key")
 	flag.Parse()
-
+	fmt.Println(dsn,"test dsn")
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 

@@ -44,24 +44,12 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.render(w, r, "show.page.tmpl", &templateData{Snippet: s})
-	// data := &templateData{Snippet: s}
 
-	// files := []string{
-	// 	"./ui/html/show.page.tmpl", "./ui/html/base.layout.tmpl", "./ui/html/footer.partial.tmpl",
-	// }
-	// ts, err := template.ParseFiles(files...)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// }
-	// err = ts.Execute(w, data)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// }
 
 }
 
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "create.page.tmpl", nil)
+	app.render(w, r, "create.page.tmpl",  &templateData{Form: forms.New(nil)})
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
@@ -171,4 +159,8 @@ func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
 // Add a flash message to the session to confirm to the user that they've been // logged out.
 app.session.Put(r, "flash", "You've been logged out successfully!") 
 http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func ping(w http.ResponseWriter, r *http.Request){
+	w.Write([]byte("OK"))	
 }
