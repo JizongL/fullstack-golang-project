@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/url"
 	"time"
 
@@ -38,9 +37,7 @@ var functions = template.FuncMap{
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
-
-	pages, err := filepath.Glob(filepath.Join(dir, "*.page.tmpl"))
-	fmt.Println(pages, "test page")
+	pages, err := filepath.Glob(filepath.Join(dir, "*.page.tmpl"))	
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +49,7 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(filepath.Join(dir, "*.layout.tmpl"), "test template 33")
+		
 		ts, err = ts.ParseGlob(filepath.Join(dir, "*.layout.tmpl"))
 
 		if err != nil {
@@ -63,9 +60,8 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 		if err != nil {
 			return nil, err
 		}
-		cache[name] = ts
-		fmt.Println(ts, "Cache name41")
+		cache[name] = ts		
 	}
-	fmt.Println(cache, "test cache")
+	
 	return cache, nil
 }
