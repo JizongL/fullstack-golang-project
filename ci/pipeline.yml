@@ -4,7 +4,7 @@ resources:
   source:
     uri: git@github.com:JizongL/fullstack-golang-project.git
     branch: master
-
+    private_key: ((deploy_key))
 - name: go-image
   type: docker-image
   source:
