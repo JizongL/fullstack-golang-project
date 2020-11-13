@@ -11,6 +11,13 @@ resources:
     repository: golang
     tag: "alpine3.12"
 
+- name: s3
+  type: s3
+  source:
+    bucket: foo
+    versioned_file: my_build
+    access_key_id: ((my_access_key))
+    secret_access_key: ((secret_key))
 
 jobs:
 - name: test
@@ -30,3 +37,35 @@ jobs:
           - |
             cd golang-app
             go test -v ./...
+
+- name: build
+  plan:
+  - get: golang-app
+    passed:
+    - test
+  - get: go-image
+  - task: build-go-app
+    image: go-image
+    config:
+      platform: linux
+      inputs:
+      - name: golang-app
+      outputs:
+      - name: built-app
+      run:
+        path: /bin/sh
+        args:
+          - -xc
+          - |
+            cd golang-app
+            go build .
+            mv ./web built-app/
+  - put: s3
+    params:
+      file: built-app/web
+
+# - name: deploy
+#   plan:
+#   - get: golang-app
+#   - task: deploy
+
