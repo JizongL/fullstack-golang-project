@@ -1,0 +1,31 @@
+resources:
+  - name: golang-app
+    type: git
+    source:
+      uri: git@github.com:JizongL/fullstack-golang-project.git
+      branch: master
+
+  - name: go-image
+    type: docker-image
+    source:
+      repository: golang
+      tag: "alpine3.12"
+
+jobs:
+  - name: test
+    plan:
+    - get: golang-app
+    - get: go-image
+    - task: run-tests
+      image: go-image
+      config:
+	platform: linux
+        inputs:
+        - name: golang-app
+        run:
+          path: /bin/sh
+          args:
+            - -xc
+            - |
+              cd golang-app
+              go test -v ./...
