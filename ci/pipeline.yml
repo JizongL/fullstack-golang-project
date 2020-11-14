@@ -38,7 +38,7 @@ jobs:
           - |
             apt-get update
             apt-get install mariadb-server -y
-            service mysql start            
-            cd /golang-app
+            service mysql start                                    
+            cd golang-app            
             mysql < pkg/models/mysql/testdata/inittestdb.sql
             go test -v ./...
