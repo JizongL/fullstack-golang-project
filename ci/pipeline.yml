@@ -1,3 +1,9 @@
+resource_types:
+- name: terraform
+  type: docker-image
+  source:
+    repository: ljfranklin/terraform-resource
+    tag: latest
 
 resources:
 - name: golang-app
@@ -7,19 +13,33 @@ resources:
     uri: git@github.com:JizongL/fullstack-golang-project.git
     branch: master
     private_key: ((deploy_key))
+
 - name: go-image
   type: docker-image
   source:
     repository: golang
     tag: "1.15.5-buster"
 
-# - name: s3
-#   type: s3
-#   source:
-#     bucket: foo
-#     versioned_file: my_build
-#     access_key_id: ((my_access_key))
-#     secret_access_key: ((secret_key))
+- name: terraform-resource
+  type: terraform
+  source:
+    backend_type: s3
+    env_name: dev
+    backend_config:
+      bucket: golang-app-2020
+      key: terraform.tfstate
+      region: us-east-1
+    env:
+      AWS_ACCESS_KEY_ID: ((AWS_ACCESS_KEY_ID))
+      AWS_SECRET_ACCESS_KEY: ((AWS_SECRET_ACCESS_KEY))
+
+- name: s3
+  type: s3
+  source:
+    bucket: golang-app-build
+    versioned_file: golang_app_version
+    access_key_id: ((AWS_ACCESS_KEY_ID))
+    secret_access_key: ((AWS_SECRET_ACCESS_KEY))
 
 jobs:
 - name: test
@@ -32,7 +52,7 @@ jobs:
     config:
       platform: linux
       inputs:
-      - name: golang-app            
+      - name: golang-app
       run:
         path: /bin/sh
         args:
@@ -40,25 +60,65 @@ jobs:
           - |
             apt-get update
             apt-get install mariadb-server -y
-            service mysql start                                    
-            cd golang-app            
+            service mysql start
+            cd golang-app
             mysql < pkg/models/mysql/testdata/inittestdb.sql
             go test -v ./...
-            go build ./cmd/web
             service mysql stop
-      outputs:
-      - name: golang-app          
-  - task: build   
+  - task: build
     config:
-      platform: linux                  
+      platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ubuntu }          
-      input:
+        source: {repository: ubuntu }
+      inputs:
         - name: golang-app
+      outputs:
+        - name: golang-build
       run:
         path: /bin/sh
         args:
           - -xc
           - |
-            ls -a
+            go build ./golang-app/cmd/web
+            tar -zcvf golang-build.tar.gz golang-app
+            cp golang-build.tar.gz golang-build/
+  - put: s3
+    params:
+      file: golang-build/*
+
+- name: terraform-infrastructure
+  plan:
+  - get: golang-app
+    trigger: true
+    passed: [test]
+  - get: s3
+    trigger: true
+    passed: [test]
+  - put: terraform-resource
+    params:
+      terraform_source: golang-app/ci/terraform/
+  - task: deploy
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ubuntu
+      inputs:
+        - name: terraform-resource
+      params:
+        SERVER_KEY: ((golang_private_key))
+      run:
+        path: /bin/sh
+        args:
+          - -c
+          - |
+            # Get's the public ip of EC2 instance from the terraform metadata
+            export public_ip=$(cat terraform-resource/metadata | jq -r .public_ip)
+
+            # Put the private key into a file and give it the correct permissions
+            echo "$SERVER_KEY" > key_file.pem && chmod 400 key_file.pem
+
+            # Insert scp command here:
+            sudo scp -r -i ./key_file.pem s3/golang-build.tar.gz ec2-user@$public_ip:/home/ec2-user/golang-app
