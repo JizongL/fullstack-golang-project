@@ -2,6 +2,7 @@
 resources:
 - name: golang-app
   type: git
+  icon: github
   source:
     uri: git@github.com:JizongL/fullstack-golang-project.git
     branch: master
@@ -25,12 +26,13 @@ jobs:
   plan:
   - get: golang-app
   - get: go-image
+    trigger: true
   - task: run-tests
     image: go-image
     config:
       platform: linux
       inputs:
-      - name: golang-app
+      - name: golang-app            
       run:
         path: /bin/sh
         args:
@@ -42,3 +44,21 @@ jobs:
             cd golang-app            
             mysql < pkg/models/mysql/testdata/inittestdb.sql
             go test -v ./...
+            go build ./cmd/web
+            service mysql stop
+      outputs:
+      - name: golang-app          
+  - task: build   
+    config:
+      platform: linux                  
+      image_resource:
+        type: docker-image
+        source: {repository: ubuntu }          
+      input:
+        - name: golang-app
+      run:
+        path: /bin/sh
+        args:
+          - -xc
+          - |
+            ls -a
