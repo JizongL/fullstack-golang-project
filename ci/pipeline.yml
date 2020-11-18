@@ -3,6 +3,8 @@ resource_types:
   type: docker-image
   source:
     repository: ljfranklin/terraform-resource
+    username: ((DOCKER_USER))
+    password: ((DOCKER_PASS))
     tag: latest
 
 resources:
@@ -18,7 +20,9 @@ resources:
   type: docker-image
   source:
     repository: golang
-    tag: "1.15.5-buster"
+    username: ((DOCKER_USER))
+    password: ((DOCKER_PASS))
+    tag: "1.15.5"
 
 - name: terraform-resource
   type: terraform
@@ -70,7 +74,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ubuntu }
+        source: {repository: ubuntu,username: ((DOCKER_USER)),password: ((DOCKER_PASS))}
       inputs:
         - name: golang-app
       outputs:
@@ -103,8 +107,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source:
-          repository: ubuntu
+        source: {repository: ubuntu,username: ((DOCKER_USER)),password: ((DOCKER_PASS))}          
       inputs:
         - name: terraform-resource
       params:
@@ -114,6 +117,9 @@ jobs:
         args:
           - -c
           - |
+            apt-get update
+            apt-get -y install sudo
+            sudo apt-get install rsync jq openssh-client -y            
             # Get's the public ip of EC2 instance from the terraform metadata
             export public_ip=$(cat terraform-resource/metadata | jq -r .public_ip)
 
@@ -121,4 +127,6 @@ jobs:
             echo "$SERVER_KEY" > key_file.pem && chmod 400 key_file.pem
 
             # Insert scp command here:
-            sudo scp -r -i ./key_file.pem s3/golang-build.tar.gz ec2-user@$public_ip:/home/ec2-user/golang-app
+            # sudo scp -r -i ./key_file.pem s3/golang-build.tar.gz ec2-user@$public_ip:/home/ec2-user/golang-app -y
+            rsync --progress -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ./key_file.pem" \
+            s3/golang-build.tar.gz ec2-user@$public_ip:/home/ec2-user/golang-app
