@@ -49,6 +49,7 @@ jobs:
   - name: test
     plan:
       - get: golang-app
+        trigger: true
       - get: go-image
         trigger: true
       - task: run-tests
