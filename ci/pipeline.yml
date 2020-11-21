@@ -127,7 +127,7 @@ jobs:
           run:
             path: /bin/sh
             args:
-              - -xc
+              - -c
               - |
                 apt-get update
                 apt-get -y install sudo
@@ -143,5 +143,5 @@ jobs:
                 # ls -a ./s3
                 rsync --progress -rave "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ./key_file.pem" \
                 s3/golang-build.tar.gz ec2-user@$public_ip:/home/ec2-user/golang-build.tar.gz
-                ssh -i key_file.pem ec2-user@$public_ip tar xzf /home/ec2-user/golang-build.tar.gz -C /home/ec2-user/golang-app
-                ssh -i key_file.pem ec2-user@$public_ip /home/ec2-user/ci/start.sh
+                ssh -i key_file.pem -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@$public_ip tar xzf /home/ec2-user/golang-build.tar.gz -C /home/ec2-user/golang-app
+                ssh -i key_file.pem -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@$public_ip /home/ec2-user/golang-app/ci/start.sh
