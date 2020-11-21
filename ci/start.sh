@@ -8,5 +8,5 @@ wget -O epel.rpm –nv https://dl.fedoraproject.org/pub/epel/epel-release-latest
 sudo yum install -y ./epel.rpm
 sudo yum install python2-certbot.noarch
 sudo yum install python-certbot-nginx
-sudo certbot --nginx
+sudo certbot --nginx --non-interactive
 
